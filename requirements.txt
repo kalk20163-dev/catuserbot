@@ -23,6 +23,7 @@ justwatch
 lottie
 lyricsgenius
 markdown
+flask
 motor
 openai
 Pillow
