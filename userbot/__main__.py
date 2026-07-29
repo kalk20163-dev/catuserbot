@@ -1,18 +1,13 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# CatUserBot #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # Copyright (C) 2020-2023 by TgCatUB@Github.
-
 # This file is part of: https://github.com/TgCatUB/catuserbot
 # and is released under the "GNU v3.0 License Agreement".
-
 # Please see: https://github.com/TgCatUB/catuserbot/blob/master/LICENSE
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
 import contextlib
 import sys
-
 import userbot
 from userbot import BOTLOG_CHATID, PM_LOGGER_GROUP_ID
-
 from .Config import Config
 from .core.logger import logging
 from .core.session import catub
@@ -25,13 +20,29 @@ from .utils import (
     verifyLoggerGroup,
 )
 
-LOGS = logging.getLogger("CatUserbot")
+import os
+import threading
+from flask import Flask
 
+_web = Flask(__name__)
+
+
+@_web.route("/")
+def _home():
+    return "CatUserbot is alive"
+
+
+def _run_web():
+    port = int(os.environ.get("PORT", 8080))
+    _web.run(host="0.0.0.0", port=port)
+
+
+threading.Thread(target=_run_web, daemon=True).start()
+
+LOGS = logging.getLogger("CatUserbot")
 LOGS.info(userbot.__copyright__)
 LOGS.info(f"Licensed under the terms of the {userbot.__license__}")
-
 cmdhr = Config.COMMAND_HAND_LER
-
 try:
     LOGS.info("Starting Userbot")
     catub.loop.run_until_complete(setup_bot())
@@ -39,8 +50,6 @@ try:
 except Exception as e:
     LOGS.error(f"{e}")
     sys.exit()
-
-
 async def startup_process():
     await verifyLoggerGroup()
     await load_plugins("plugins")
@@ -62,8 +71,6 @@ async def startup_process():
         await add_bot_to_logger_group(PM_LOGGER_GROUP_ID)
     await startupmessage()
     return
-
-
 async def externalrepo():
     string = "<b>Your external repo plugins have imported.<b>\n\n"
     if Config.EXTERNAL_REPO:
@@ -81,12 +88,8 @@ async def externalrepo():
         string += f"<b>➜ Repo:  </b><a href='{data[0]}'><b>{data[1]}</b></a>\n<b>     • Imported Plugins:</b>  <code>{data[2]}</code>\n<b>     • Failed to Import:</b>  <code>{', '.join(data[3])}</code>\n\n"
     if "Imported Plugins" in string:
         await catub.tgbot.send_message(BOTLOG_CHATID, string, parse_mode="html")
-
-
 catub.loop.run_until_complete(startup_process())
-
 catub.loop.run_until_complete(externalrepo())
-
 if len(sys.argv) in {1, 3, 4}:
     with contextlib.suppress(ConnectionError):
         catub.run_until_disconnected()
