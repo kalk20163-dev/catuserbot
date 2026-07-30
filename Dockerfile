@@ -17,7 +17,7 @@ ENV TZ=Asia/Kolkata
 ## Copy files into the Docker image
 COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir flask
 
 ENV PATH="/home/userbot/bin:$PATH"
 
